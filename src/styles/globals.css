@@ -1,0 +1,451 @@
+:root {
+  --primary: #6366f1;
+  --primary-hover: #4f46e5;
+  --secondary: #ec4899;
+  --bg: #0f172a;
+  --card-bg: rgba(30, 41, 59, 0.7);
+  --text: #f8fafc;
+  --text-muted: #94a3b8;
+  --border: rgba(255, 255, 255, 0.1);
+  --success: #10b981;
+  --error: #ef4444;
+  --warning: #f59e0b;
+  --glass: rgba(255, 255, 255, 0.03);
+  --glass-border: rgba(255, 255, 255, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(236, 72, 153, 0.1) 0, transparent 50%);
+  min-height: 100vh;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--glass-border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+input, select, textarea {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  color: var(--text);
+  padding: 10px 14px;
+  width: 100%;
+  font-size: 1rem;
+}
+
+select option {
+  background-color: var(--bg);
+  color: var(--text);
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+}
+
+.card {
+  background: var(--card-bg);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: white;
+  padding: 10px 20px;
+}
+
+.btn-primary:hover {
+  background: var(--primary-hover);
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  padding: 10px 20px;
+  border: 1px solid var(--glass-border);
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-1px);
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+.nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 40px;
+  background: rgba(15, 23, 42, 0.8);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--glass-border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.nav-links {
+  display: flex;
+  gap: 24px;
+}
+
+.nav-link {
+  color: var(--text-muted);
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.nav-link:hover, .nav-link.active {
+  color: var(--text);
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+  background: var(--card-bg);
+  border-radius: 16px;
+  border: 1px solid var(--glass-border);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th {
+  text-align: left;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+td {
+  padding: 8px 10px;
+  border-top: 1px solid var(--glass-border);
+  font-size: 0.8rem;
+}
+
+tr:hover td {
+  background: rgba(255, 255, 255, 0.01);
+}
+
+.badge {
+  padding: 3px 8px;
+  border-radius: 9999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.badge-pending { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+.badge-in-progress { background: rgba(99, 102, 241, 0.2); color: #818cf8; }
+.badge-completed { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+.badge-rejected { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modal-content {
+  width: 100%;
+  max-width: 800px;
+  max-height: 90vh;
+  position: relative;
+  border-radius: 16px;
+  background: var(--card-bg);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-body {
+  padding: 32px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.modal-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.05); /* Lighter than before */
+  border: 1px solid var(--glass-border);
+  color: white;
+  border-radius: 50%;
+  font-size: 1.25rem;
+  z-index: 100; /* Higher than contents */
+  transition: all 0.2s;
+  line-height: 0;
+  padding-bottom: 2px; 
+}
+
+.modal-close:hover {
+  background: var(--error);
+  border-color: var(--error);
+  transform: rotate(90deg);
+}
+
+/* React DatePicker Custom Styling */
+.date-picker-input {
+  width: 100%;
+  padding: 10px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  color: white;
+  font-family: inherit;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+  outline: none;
+}
+
+.date-picker-input:focus {
+  border-color: var(--primary);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.react-datepicker-wrapper {
+  width: 100%;
+}
+
+.react-datepicker {
+  font-family: inherit !important;
+  background-color: var(--card-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 12px !important;
+  color: white !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(12px);
+}
+
+.react-datepicker__header {
+  background-color: transparent !important;
+  border-bottom: 1px solid var(--glass-border) !important;
+}
+
+.react-datepicker__current-month, .react-datepicker-time__header, .react-datepicker-year-header {
+  color: white !important;
+}
+
+.react-datepicker__day-name, .react-datepicker__day, .react-datepicker__time-name {
+  color: var(--text-muted) !important;
+}
+
+.react-datepicker__day:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  color: white !important;
+}
+
+.react-datepicker__day--selected, .react-datepicker__day--in-selecting-range, .react-datepicker__day--in-range {
+  background-color: var(--primary) !important;
+  color: white !important;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.modal-header {
+  padding: 24px 32px 0;
+}
+
+.modal-header h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+/* Quill Editor Styling */
+.quill-editor-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.quill-editor-container .ql-toolbar {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-top-left-radius: 8px !important;
+  border-top-right-radius: 8px !important;
+  color: white !important;
+}
+
+.quill-editor-container .ql-container {
+  background: rgba(255, 255, 255, 0.02) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-top: none !important;
+  border-bottom-left-radius: 8px !important;
+  border-bottom-right-radius: 8px !important;
+  min-height: 200px;
+  font-size: 1rem;
+}
+
+.quill-editor-container .ql-editor {
+  color: white !important;
+}
+
+.quill-editor-container .ql-stroke {
+  stroke: white !important;
+}
+
+.quill-editor-container .ql-fill {
+  fill: white !important;
+}
+
+.quill-editor-container .ql-picker {
+  color: white !important;
+}
+
+.quill-editor-container .ql-picker-options {
+  background-color: #1e293b !important; /* solid color for dropdowns to ensure readability */
+  border: 1px solid var(--glass-border) !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4) !important;
+  border-radius: 8px !important;
+  padding: 8px !important;
+}
+
+.quill-editor-container .ql-picker-item {
+  color: var(--text-muted) !important;
+}
+
+.quill-editor-container .ql-picker-item:hover,
+.quill-editor-container .ql-picker-item.ql-selected {
+  color: white !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+.quill-editor-container .ql-tooltip {
+  background-color: #1e293b !important;
+  border: 1px solid var(--glass-border) !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4) !important;
+  color: white !important;
+  border-radius: 8px !important;
+  padding: 10px 15px !important;
+  backdrop-filter: blur(12px) !important;
+}
+
+.quill-editor-container .ql-tooltip input[type=text] {
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: white !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 4px !important;
+  padding: 4px 8px !important;
+  margin-right: 8px !important;
+}
+
+.quill-editor-container .ql-tooltip .ql-action,
+.quill-editor-container .ql-tooltip .ql-remove {
+  color: var(--primary) !important;
+  font-weight: 600;
+}
+
+/* Rich Text Content Display */
+.quill-content h1, .quill-content h2, .quill-content h3 {
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+  color: var(--primary);
+}
+
+.quill-content p {
+  margin-bottom: 1em;
+}
+
+.quill-content ul, .quill-content ol {
+  margin-left: 2em;
+  margin-bottom: 1em;
+}
+
+.quill-content blockquote {
+  border-left: 4px solid var(--primary);
+  padding-left: 1em;
+  font-style: italic;
+  margin-bottom: 1em;
+  background: rgba(255, 255, 255, 0.03);
+}

@@ -1,0 +1,146 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String           @id @default(cuid())
+  email        String           @unique
+  password     String
+  role         Role             @default(EXECUTOR)
+  fullName     String
+  isBlocked    Boolean          @default(false)
+  tasksCreated Task[]           @relation("TaskCreator")
+  tasksAssigned TaskAssignee[]
+  workReports  UserWorkReport[] @relation("ReportExecutor")
+  createdWorkReports UserWorkReport[] @relation("ReportCreator")
+  salaryRates  SalaryRate[]
+  comments     Comment[]
+  auditLogs    AuditLog[]
+}
+
+enum Role {
+  ADMIN
+  EXECUTOR
+  UCH
+}
+
+model TaskType {
+  id    String @id @default(cuid())
+  name  String @unique
+  tasks Task[]
+  rates SalaryRate[]
+}
+
+model TaskDirection {
+  id    String @id @default(cuid())
+  name  String @unique
+  tasks TaskDirectionMapping[]
+}
+
+model Task {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  typeId      String
+  type        TaskType @relation(fields: [typeId], references: [id])
+  deadline    DateTime
+  creatorId   String
+  creator     User     @relation("TaskCreator", fields: [creatorId], references: [id])
+  status      TaskStatus @default(PENDING)
+  createdAt   DateTime @default(now())
+  assignees   TaskAssignee[]
+  directions  TaskDirectionMapping[]
+  workReports UserWorkReport[]
+  comments    Comment[]
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  content   String
+  createdAt DateTime @default(now())
+  taskId    String
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum TaskStatus {
+  PENDING
+  CLARIFICATION
+  REJECTED
+  IN_PROGRESS
+  IN_REVIEW
+  IN_PUBLICATION
+  PUBLISHED_NO_HW
+  PUBLISHED_NO_HW_PRO
+  REWORKING
+  COMPLETED
+}
+
+model TaskAssignee {
+  taskId String
+  userId String
+  task   Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@id([taskId, userId])
+}
+
+model TaskDirectionMapping {
+  taskId      String
+  directionId String
+  task        Task          @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  direction   TaskDirection @relation(fields: [directionId], references: [id], onDelete: Cascade)
+  @@id([taskId, directionId])
+}
+
+model SalaryRate {
+  id         String   @id @default(cuid())
+  executorId String
+  executor   User     @relation(fields: [executorId], references: [id])
+  typeId     String
+  type       TaskType @relation(fields: [typeId], references: [id])
+  rate       Float
+  startDate  DateTime
+  endDate    DateTime?
+  unit       Unit
+  comment    String?
+  @@unique([executorId, typeId, startDate])
+}
+
+enum Unit {
+  HOURS
+  UNITS
+  DAYS
+  FIX
+}
+
+model UserWorkReport {
+  id               String   @id @default(cuid())
+  executorId       String
+  executor         User     @relation("ReportExecutor", fields: [executorId], references: [id])
+  taskId           String
+  task             Task     @relation(fields: [taskId], references: [id])
+  recordDate       DateTime @default(now())
+  volume           Float
+  comment          String?
+  creatorId        String
+  creator          User     @relation("ReportCreator", fields: [creatorId], references: [id])
+  amountCalculated Float?
+  unitMatched      Unit?
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  action     String   // CREATE, UPDATE, DELETE
+  entity     String   // User, Task, SalaryRate, etc.
+  entityId   String?
+  details    String?  // JSON string with changes
+  createdAt  DateTime @default(now())
+}
