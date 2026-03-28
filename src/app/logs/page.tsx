@@ -106,7 +106,7 @@ export default function LogsPage() {
         const csvContent = "\uFEFF" + [
           ["Дата", "Пользователь", "Действие", "Сущность", "ID Сущности", "Детали"],
           ...rows
-        ].map(e => e.map(cell => `"${cell.toString().replace(/"/g, '""')}"`).join(",")).join("\n");
+        ].map((e) => e.map((cell: string) => `"${cell.replace(/"/g, '""')}"`).join(",")).join("\n");
 
         const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
         const link = document.createElement("a");

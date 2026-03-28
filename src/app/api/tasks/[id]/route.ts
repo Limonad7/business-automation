@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "../../auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth-options";
 import { prisma } from "@/lib/prisma";
 import { logAction } from "@/lib/logger";
 
@@ -187,7 +187,13 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
 
   const currentTask = await prisma.task.findUnique({
     where: { id },
-    include: { creator: true, _count: { select: { workReports: true } } }
+    include: {
+      creator: true,
+      type: { select: { name: true } },
+      assignees: { include: { user: { select: { fullName: true } } } },
+      directions: { include: { direction: { select: { name: true } } } },
+      _count: { select: { workReports: true } },
+    },
   });
 
   if (!currentTask) return NextResponse.json({ error: "Задача не найдена" }, { status: 404 });
@@ -205,16 +211,11 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
   }
 
   try {
-    await prisma.task.delete({ where: { id } });
+    const taskTypeName = currentTask.type.name;
+    const assigneeNames = currentTask.assignees.map((a) => a.user.fullName);
+    const directionNames = currentTask.directions.map((d) => d.direction.name);
 
-    const [oldType, oldAssignees, oldDirs] = await Promise.all([
-      prisma.taskType.findUnique({ where: { id: currentTask.typeId }, select: { name: true } }),
-      prisma.user.findMany({ where: { id: { in: currentTask.assignees.map(a => a.userId) } }, select: { fullName: true } }),
-      prisma.taskDirection.findMany({ 
-        where: { tasks: { some: { taskId: id } } }, 
-        select: { name: true } 
-      })
-    ]);
+    await prisma.task.delete({ where: { id } });
 
     await logAction({
       userId: user.id,
@@ -227,9 +228,9 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
           description: currentTask.description, 
           status: currentTask.status, 
           deadline: currentTask.deadline,
-          taskType: oldType?.name,
-          assignees: oldAssignees.map(u => u.fullName),
-          directions: oldDirs.map(d => d.name)
+          taskType: taskTypeName,
+          assignees: assigneeNames,
+          directions: directionNames
         }, 
         after: null 
       }

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "../../../../auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth-options";
 import { prisma } from "@/lib/prisma";
 import { logAction } from "@/lib/logger";
 
@@ -13,7 +13,7 @@ export async function DELETE(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { commentId } = await params;
+  const { id: taskId, commentId } = await params;
 
   try {
     const oldComment = await prisma.comment.findUnique({ where: { id: commentId } });
@@ -22,7 +22,7 @@ export async function DELETE(
     });
 
     const task = await prisma.task.findUnique({ 
-      where: { id: (await params).id },
+      where: { id: taskId },
       select: { title: true }
     });
 
