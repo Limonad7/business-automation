@@ -134,3 +134,85 @@ docker stop pg-biz         # Остановить
 docker start pg-biz        # Запустить снова
 docker rm -f pg-biz        # Удалить контейнер
 ```
+
+
+---
+
+## Деплой на Railway
+
+### Что такое Railway
+
+[Railway](https://railway.com) — облачная платформа для деплоя приложений. Бесплатный план включает $5 в месяц, чего хватает для тестирования.
+
+### Шаг 1. Исправить TypeScript ошибки (Next.js 16)
+
+В Next.js 15+ параметр `params` в Route Handlers стал `Promise`. Все файлы вида `app/api/.../[id]/route.ts` должны иметь такую сигнатуру:
+
+```ts
+// ✅ Правильно для Next.js 15+
+export async function PATCH(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+}
+```
+
+### Шаг 2. Создать проект на Railway
+
+1. Зарегистрироваться на [railway.com](https://railway.com)
+2. Нажать **New Project → Deploy from GitHub repo**
+3. Выбрать репозиторий `business-automation`
+4. Railway автоматически начнёт первый деплой (он упадёт — это нормально, нужно настроить переменные)
+
+### Шаг 3. Добавить PostgreSQL
+
+1. В проекте Railway нажать **+ New Service → Database → PostgreSQL**
+2. Дождаться статуса **Online**
+3. Railway автоматически создаст переменную `DATABASE_URL` внутри Postgres-сервиса
+
+### Шаг 4. Добавить переменные окружения
+
+Открыть сервис `business-automation` → вкладка **Variables** → нажать **New Variable** и добавить:
+
+| Переменная | Значение |
+|---|---|
+| `DATABASE_URL` | `${{Postgres.DATABASE_URL}}` — Railway подставит автоматически |
+| `NEXTAUTH_URL` | `https://<ваш-домен>.up.railway.app` |
+| `NEXTAUTH_SECRET` | Любая случайная строка 32+ символов (например: `openssl rand -base64 32`) |
+
+Нажать **Deploy** для применения.
+
+### Шаг 5. Настроить Pre-deploy команду
+
+Открыть сервис → **Settings → Deploy → Pre-deploy Command**:
+
+```
+npx prisma migrate deploy && npx prisma db seed
+```
+
+> ⚠️ `npx prisma db seed` заполняет БД тестовыми данными и **очищает её при каждом деплое**.
+> Для продакшена уберите `&& npx prisma db seed` и оставьте только `npx prisma migrate deploy`.
+
+Нажать **Deploy** — Railway запустит миграции, seed и поднимет сервис.
+
+### Шаг 6. Получить URL приложения
+
+После успешного деплоя URL будет виден в верхней части сервиса:
+`https://<название>-production-XXXX.up.railway.app`
+
+### Тестовые данные после seed
+
+| Email | Пароль | Роль |
+|---|---|---|
+| `admin@test.ru` | `password123` | ADMIN |
+| `exec1@test.ru` | `password123` | EXECUTOR |
+| `exec2@test.ru` | `password123` | EXECUTOR |
+| `uch@test.ru` | `password123` | UCH |
+
+### Что происходит при каждом пуше в main
+
+Railway автоматически подхватывает новые коммиты и запускает новый деплой:
+1. Сборка образа (`npm run build`)
+2. Pre-deploy: `npx prisma migrate deploy` (применяет новые миграции)
+3. Запуск сервера (`npm start`)
