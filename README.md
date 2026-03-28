@@ -13,7 +13,7 @@
 - **Node.js** 20+ и **npm**
 - **PostgreSQL** 14+ (локально через Docker или облачный сервис)
 
-## Быстрый старт
+## Быстрый старт (локально)
 
 ### 1. Клонировать репозиторий
 
@@ -39,139 +39,49 @@ cp .env.example .env
 Содержимое `.env`:
 
 | Переменная | Описание | Пример |
-|------------|----------|--------|
-| `DATABASE_URL` | Строка подключения к PostgreSQL | `postgresql://user:password@localhost:5432/business_automation` |
+|---|---|---|
+| `DATABASE_URL` | Строка подключения к PostgreSQL | `postgresql://user:pass@localhost:5432/biz` |
 | `NEXTAUTH_URL` | URL приложения | `http://localhost:3000` |
-| `NEXTAUTH_SECRET` | Секрет для подписи JWT (любая длинная случайная строка) | `my-super-secret-key-123` |
+| `NEXTAUTH_SECRET` | Секретный ключ (32+ символов) | `openssl rand -base64 32` |
 
-### 4. Поднять PostgreSQL (Docker)
-
-```bash
-docker run -d \
-  --name pg-biz \
-  -e POSTGRES_USER=user \
-  -e POSTGRES_PASSWORD=password \
-  -e POSTGRES_DB=business_automation \
-  -p 5432:5432 \
-  postgres:16
-```
-
-Или используйте любой другой способ (облачный Postgres, локальная установка). Главное — чтобы `DATABASE_URL` в `.env` указывал на рабочую базу.
-
-### 5. Создать таблицы в базе данных
+### 4. Применить миграции и заполнить БД
 
 ```bash
+npx prisma migrate deploy
 npx prisma generate
-npx prisma db push
-```
-
-Prisma автоматически создаст все таблицы, индексы и связи по схеме из `prisma/schema.prisma`. Вручную SQL выполнять не нужно.
-
-### 6. (По желанию) Загрузить демо-данные
-
-```bash
 node prisma/seed.js
 ```
 
-### 7. Запустить приложение
+### 5. Запустить
 
 ```bash
 npm run dev
 ```
 
-Открыть в браузере: **http://localhost:3000**
-
-## Тестовые учётные записи
-
-После выполнения `seed.js` доступны следующие пользователи (пароль для всех: **`password123`**):
-
-| Email | Роль | Описание |
-|-------|------|----------|
-| `admin@test.ru` | ADMIN | Полный доступ: пользователи, справочники, ставки, логи |
-| `exec1@test.ru` | EXECUTOR | Исполнитель задач, отчёты по своим задачам |
-| `exec2@test.ru` | EXECUTOR | Исполнитель задач |
-| `uch@test.ru` | UCH | Учебный координатор, управление задачами и отчётами |
-
-## Структура базы данных
-
-Вся схема описана в `prisma/schema.prisma`. Основные таблицы:
-
-| Таблица | Назначение |
-|---------|------------|
-| `User` | Пользователи (email, пароль, роль, ФИО) |
-| `Task` | Задачи (название, описание, тип, дедлайн, статус) |
-| `TaskType` | Справочник типов задач |
-| `TaskDirection` | Справочник направлений |
-| `TaskAssignee` | Связь задача ↔ исполнитель (many-to-many) |
-| `TaskDirectionMapping` | Связь задача ↔ направление (many-to-many) |
-| `SalaryRate` | Ставки оплаты (исполнитель + тип задачи + период + единица) |
-| `UserWorkReport` | Отчёты о работе с автоматическим расчётом суммы |
-| `Comment` | Комментарии к задачам |
-| `AuditLog` | Журнал действий пользователей |
-
-## Роли
-
-| Роль | Возможности |
-|------|------------|
-| **ADMIN** | Полный доступ: CRUD пользователей, справочников, ставок, просмотр логов |
-| **EXECUTOR** | Работа со своими задачами и отчётами, ограниченное редактирование |
-| **UCH** | Управление задачами (своими и других УЧ), создание отчётов |
-
-## Полезные команды
-
-```bash
-npm run dev          # Режим разработки
-npm run build        # Сборка для продакшена
-npm start            # Запуск продакшен-сборки
-npx prisma studio    # Веб-интерфейс для просмотра данных в БД
-```
-
-### Docker (PostgreSQL)
-
-```bash
-docker ps                  # Проверить запущенные контейнеры
-docker stop pg-biz         # Остановить
-docker start pg-biz        # Запустить снова
-docker rm -f pg-biz        # Удалить контейнер
-```
-
+Открыть: `http://localhost:3000/login`
 
 ---
 
 ## Деплой на Railway
 
-### Что такое Railway
+> Это рабочий способ деплоя — проверен и настроен. Railway использует `Dockerfile` из репозитория.
 
-[Railway](https://railway.com) — облачная платформа для деплоя приложений. Бесплатный план включает $5 в месяц, чего хватает для тестирования.
+### Шаг 1. Создать аккаунт на Railway
 
-### Шаг 1. Исправить TypeScript ошибки (Next.js 16)
+Перейти на [railway.com](https://railway.com) и зарегистрироваться через GitHub.
 
-В Next.js 15+ параметр `params` в Route Handlers стал `Promise`. Все файлы вида `app/api/.../[id]/route.ts` должны иметь такую сигнатуру:
+### Шаг 2. Создать новый проект
 
-```ts
-// ✅ Правильно для Next.js 15+
-export async function PATCH(
-  req: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const { id } = await params;
-}
-```
-
-### Шаг 2. Создать проект на Railway
-
-1. Зарегистрироваться на [railway.com](https://railway.com)
-2. Нажать **New Project → Deploy from GitHub repo**
+1. Нажать **New Project**
+2. Выбрать **Deploy from GitHub repo**
 3. Выбрать репозиторий `business-automation`
-4. Railway автоматически начнёт первый деплой (он упадёт — это нормально, нужно настроить переменные)
 
 ### Шаг 3. Добавить PostgreSQL
 
-1. В проекте Railway нажать **+ New Service → Database → PostgreSQL**
-2. Дождаться статуса **Online**
-3. Railway автоматически создаст переменную `DATABASE_URL` внутри Postgres-сервиса
+1. В проекте нажать **+ New** → **Database** → **Add PostgreSQL**
+2. Railway создаст базу данных автоматически
 
-### Шаг 4. Добавить переменные окружения
+### Шаг 4. Настроить переменные окружения
 
 Открыть сервис `business-automation` → вкладка **Variables** → нажать **New Variable** и добавить:
 
@@ -183,25 +93,29 @@ export async function PATCH(
 
 Нажать **Deploy** для применения.
 
-### Шаг 5. Настроить Pre-deploy команду
+### Шаг 5. Деплой запустится автоматически
 
-Открыть сервис → **Settings → Deploy → Pre-deploy Command**:
+Railway увидит `Dockerfile` в репозитории и запустит сборку.
+
+При каждом старте контейнер выполняет:
 
 ```
-npx prisma migrate deploy && npx prisma db seed
+npx prisma migrate deploy   # применяет миграции БД
+node prisma/seed.js         # заполняет БД тестовыми данными
+npm run start               # запускает Next.js сервер
 ```
 
-> ⚠️ `npx prisma db seed` заполняет БД тестовыми данными и **очищает её при каждом деплое**.
-> Для продакшена уберите `&& npx prisma db seed` и оставьте только `npx prisma migrate deploy`.
-
-Нажать **Deploy** — Railway запустит миграции, seed и поднимет сервис.
+> ⚠️ `seed.js` **очищает** БД и заново заполняет тестовыми данными при каждом перезапуске контейнера.
+> Для продакшена удалите `&& node prisma/seed.js` из `CMD` в `Dockerfile`.
 
 ### Шаг 6. Получить URL приложения
 
 После успешного деплоя URL будет виден в верхней части сервиса:
 `https://<название>-production-XXXX.up.railway.app`
 
-### Тестовые данные после seed
+---
+
+## Тестовые данные (после seed)
 
 | Email | Пароль | Роль |
 |---|---|---|
@@ -210,9 +124,33 @@ npx prisma migrate deploy && npx prisma db seed
 | `exec2@test.ru` | `password123` | EXECUTOR |
 | `uch@test.ru` | `password123` | UCH |
 
-### Что происходит при каждом пуше в main
+---
+
+## Dockerfile (итоговый)
+
+```dockerfile
+FROM node:20-alpine
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm ci
+
+COPY . .
+RUN npx prisma generate
+RUN npm run build
+
+EXPOSE 3000
+
+CMD sh -c "npx prisma migrate deploy && node prisma/seed.js && npm run start"
+```
+
+---
+
+## Что происходит при каждом пуше в main
 
 Railway автоматически подхватывает новые коммиты и запускает новый деплой:
 1. Сборка образа (`npm run build`)
-2. Pre-deploy: `npx prisma migrate deploy` (применяет новые миграции)
-3. Запуск сервера (`npm start`)
+2. Применение миграций (`npx prisma migrate deploy`)
+3. Запуск seed (`node prisma/seed.js`)
+4. Запуск сервера (`npm start`)
